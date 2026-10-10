@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  MagicNeko-ROM · OnePlus 10T (ovaltine) local manifest
+  ============================================================================
+  目标产物 : crDroid 16.0 (Android 16) / lineage_ovaltine-bp4a-userdebug
+  上游基线 : repo init -u https://github.com/crdroidandroid/android.git -b 16.0
+  用法     : 放进 .repo/local_manifests/ 后 repo sync（详见 README.md）
+
+  约定
+  ....
+  * 所有 revision 一律钉「具体 commit SHA」，不用分支名 —— 保证产物可复现。
+  * 本清单只声明「上游 crDroid manifest 里没有、或需要替换」的项目；
+    其余项目由上游 manifest 提供，不要在这里重复声明。
+
+  各项目来源
+  ..........
+  * device/oneplus/ovaltine、device/oneplus/sm8450-common、hardware/oplus、
+    vendor/oneplus/sm8450-common、内核四仓 → MagicNeko-ROM（本组织维护的版本）
+  * vendor/oneplus/ovaltine → GitLab 上游（lineage-ovaltine-dev）。该仓历史里
+    含两个超重固件（modem.img 271MB / dsp.img 64MB），GitHub 放不下，故指向上游；
+    本项目对固件版本做的 pin（见 device 树 BoardConfigVendor.mk 与 radio/）需自行核对。
+
+  内核
+  ....
+  android_kernel_oneplus_sm8450 的 lineage-23.2 顶端即下面这个 SHA，
+  含本项目的内存扩展改动（CONFIG_KSM fragment + 配套 SELinux 授权 + 自适应 zram）。
+-->
+<manifest>
+
+  <!-- ===== 远端 ===== -->
+  <remote name="mkn" fetch="https://github.com/MagicNeko-ROM" />
+  <remote name="lod" fetch="https://gitlab.com/lineage-ovaltine-dev" />
+
+  <!-- ===== 设备树 ===== -->
+  <project name="android_device_oneplus_ovaltine"
+           path="device/oneplus/ovaltine"
+           remote="mkn"
+           revision="76d25eb5e8de4e1992394f6de4e6c078dd31c16a" />
+
+  <project name="android_device_oneplus_sm8450-common"
+           path="device/oneplus/sm8450-common"
+           remote="mkn"
+           revision="48eefe1c889b62741737e7a699d6b4c9c9be5459" />
+
+  <!-- ===== 硬件 ===== -->
+  <project name="android_hardware_oplus"
+           path="hardware/oplus"
+           remote="mkn"
+           revision="eb128991b7e7600c4dc6f15048872405628bfdbf" />
+
+  <!-- ===== 供应商库 ===== -->
+  <project name="proprietary_vendor_oneplus_sm8450-common"
+           path="vendor/oneplus/sm8450-common"
+           remote="mkn"
+           revision="d2144b3cdb0fef435ff3d9e92f36a676733b06d1" />
+
+  <project name="proprietary_vendor_oneplus/ovaltine"
+           path="vendor/oneplus/ovaltine"
+           remote="lod"
+           revision="0fa6f172b27c2ec11f683a298272db1c1763124d" />
+
+  <!-- ===== 内核 ===== -->
+  <project name="android_kernel_oneplus_sm8450"
+           path="kernel/oneplus/sm8450"
+           remote="mkn"
+           revision="696da44ff3f5ab421887fa90288188f207f95e3c" />
+
+  <project name="android_kernel_oneplus_sm8450-devicetrees"
+           path="kernel/oneplus/sm8450-devicetrees"
+           remote="mkn"
+           revision="7de64f6d4e2c711aa313be858e3f33fe7a7ea11c" />
+
+  <project name="android_kernel_oneplus_sm8450-modules"
+           path="kernel/oneplus/sm8450-modules"
+           remote="mkn"
+           revision="50177be9d969b9ee32fbe0d34318f1da3069b6d4" />
+
+  <project name="android_oneplus_kernel_gki-modules"
+           path="kernel/oneplus/gki-modules"
+           remote="mkn"
+           revision="0365f6a74f1ac97a274d8a7041f0c56e63d1982e" />
+
+</manifest>
