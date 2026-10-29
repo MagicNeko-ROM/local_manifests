@@ -1,45 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ============================================================================
-  MagicNeko-ROM · OnePlus 10T (ovaltine) local manifest — lineage-23.2 基线
+  MagicNeko-ROM · OnePlus 10T (ovaltine) local manifest — lineage-23.2
+  MagicNeko-ROM · 一加 10T (ovaltine) 构建用 local manifest — lineage-23.2
   ============================================================================
-  目标产物 : AviumUI 16.2.2 / lineage_ovaltine-bp4a-userdebug
-  上游基线 : repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 git-lfs 开关
-  用法     : 放进 .repo/local_manifests/ 后 repo sync（详见 README.md）
 
-  约定
-  ....
-  * 所有 revision 一律钉「具体 commit SHA」，不用分支名 —— 保证产物可复现。
-  * 本清单只声明「上游 LineageOS manifest 里没有、或需要替换」的项目；
-    其余项目由上游 manifest 提供，不要在这里重复声明。
-  * 不给 <default>，避免覆盖主 manifest 的全局默认 remote / revision。
+  EN  Target   : AviumUI 16.2.2 / lunch lineage_ovaltine-bp4a-userdebug
+      Upstream : repo init -u https://github.com/LineageOS/android.git -b lineage-23.2
+                 (git-lfs is required, see README)
+      Usage    : drop into .repo/local_manifests/ then repo sync (see README)
 
-  为什么有 hardware/qcom-caf/sm8450/display 和
-  hardware/lineage/interfaces/livedisplay 这两条
-  ................................................
-  这两个仓在上游 manifest 里是存在的，但本机型的屏下光学指纹需要两处改动，
-  上游没有：
+  ZH  产物     : AviumUI 16.2.2 / lunch lineage_ovaltine-bp4a-userdebug
+      上游基线 : repo init -u https://github.com/LineageOS/android.git -b lineage-23.2
+                 （必须带 git-lfs，见 README）
+      用法     : 放进 .repo/local_manifests/ 后 repo sync（见 README）
 
-  1) sm8450 的 display HAL 缺 UdfpsExtension。本面板 DTSI 是
-     oplus,ofp-fp-type = <0x08>，没有 BIT(4) local HBM —— 不能只点亮指纹那一
-     小块，只能整屏进 HBM 再靠 SystemUI 的压暗层压出圆形观感。HBM 触发点就
-     编在 UdfpsExtension 里，缺了它 HBM 永远不会开，指纹采图必然
-     FP_ERR_FINGERUP_TOO_FAST。
+  ============================================================================
+  EN  Conventions
+  ZH  约定
+  ============================================================================
+  EN  * Every revision is pinned to a concrete commit SHA, never a branch name,
+          so builds are reproducible.
+      * Only projects that are missing from, or must override, the upstream
+        LineageOS manifest are declared here. Everything else comes from
+        upstream — do not duplicate it.
+      * No default element, so the main manifest's global remote/revision is
+        left untouched.
 
-  2) 上面的改动让 composer 走了 CreateCore 的降级路径（DRM master 被
-     SurfaceFlinger 先占住时的正常兜底）。但 livedisplay 也走同一个
-     CoreImpl::Init()，它拿到的是 null display，随后 CreateCore 失败，而
-     SDMController.cpp 原本是 LOG(FATAL) —— 变成每 5 秒一次的 init 重启循环，
-     会把 Launcher 一起拖死（系统停在 FallbackHome）。
+  ZH  * 所有 revision 一律钉「具体 commit SHA」，不用分支名 —— 保证产物可复现。
+      * 本清单只声明「上游 LineageOS manifest 里没有、或需要替换」的项目；
+        其余项目由上游 manifest 提供，不要在这里重复声明。
+      * 不写 default 元素，避免覆盖主 manifest 的全局默认 remote / revision。
 
-  这两处详见 device/oneplus/ovaltine/docs/fingerprint-fix-2026-10-29.md。
+  ============================================================================
+  EN  Why two upstream repos are overridden
+  ZH  为什么有两处替换上游
+  ============================================================================
+  EN  Both of these exist in the upstream manifest already, but this device
+      needs changes that upstream does not carry:
+
+      1) hardware/qcom-caf/sm8450/display lacks UdfpsExtension. The panel DTSI
+         is oplus,ofp-fp-type = 0x08, with no BIT(4) local HBM — it cannot
+         light up only the fingerprint area, so the whole screen has to enter
+         HBM and the circular look comes from the SystemUI dim layer. The HBM
+         trigger lives in UdfpsExtension; without it HBM never turns on and
+         enrollment always fails with FP_ERR_FINGERUP_TOO_FAST.
+
+      2) That change lets composer take CreateCore's null-display fallback
+         path (the normal case when SurfaceFlinger already holds the DRM
+         master). But livedisplay calls the same CoreImpl::Init(), gets a null
+         display, and its CreateCore fails too — and SDMController.cpp used to
+         LOG(FATAL) there, producing a five-second init restart loop that drags
+         Launcher down to FallbackHome.
+
+  ZH  这两个仓在上游 manifest 里本来就有，但本机型需要的改动上游没有：
+
+      1) sm8450 的 display HAL 缺 UdfpsExtension。本面板 DTSI 是
+         oplus,ofp-fp-type = 0x08，没有 BIT(4) local HBM —— 不能只点亮指纹
+         那一小块，只能整屏进 HBM，再靠 SystemUI 的压暗层压出圆形观感。HBM
+         的触发点编在 UdfpsExtension 里，缺了它 HBM 永远不会开，指纹采图必然
+         报 FP_ERR_FINGERUP_TOO_FAST。
+
+      2) 上面的改动让 composer 走了 CreateCore 的降级路径（DRM master 被
+         SurfaceFlinger 先占住时的正常兜底）。但 livedisplay 也调同一个
+         CoreImpl::Init()，它拿到的是 null display，随后 CreateCore 失败，而
+         SDMController.cpp 原本是 LOG(FATAL) —— 变成每 5 秒一次的 init 重启
+         循环，会把 Launcher 一起拖死（系统停在 FallbackHome）。
+
+  Full write-up / 完整排查记录:
+    device/oneplus/ovaltine/docs/fingerprint-fix-2026-10-29.md
 -->
 <manifest>
 
-  <!-- ===== 远端 ===== -->
+  <!-- ===== Remotes / 远端 ===== -->
   <remote name="mkn" fetch="https://github.com/MagicNeko-ROM" />
 
-  <!-- ===== 设备树 ===== -->
+  <!-- ===== Device trees / 设备树 ===== -->
   <project name="android_device_oneplus_ovaltine"
            path="device/oneplus/ovaltine"
            remote="mkn"
@@ -50,7 +86,7 @@
            remote="mkn"
            revision="764e8943c31ab2e25319502f0aa060a97669ce16" />
 
-  <!-- ===== 供应商库 ===== -->
+  <!-- ===== Vendor / 供应商库 ===== -->
   <project name="proprietary_vendor_oneplus_ovaltine"
            path="vendor/oneplus/ovaltine"
            remote="mkn"
@@ -66,25 +102,27 @@
            remote="mkn"
            revision="b103218261cbc0ea01f32a75f1cff5baaf74e2b5" />
 
-  <!-- ===== 硬件 ===== -->
+  <!-- ===== Hardware / 硬件 ===== -->
   <project name="android_hardware_oplus"
            path="hardware/oplus"
            remote="mkn"
            revision="ae0e62468111b679497d9bee6ef1d979bd76f7b8" />
 
-  <!-- 屏下指纹 HBM：UdfpsExtension + SDM 扩展钩子（14 文件） -->
+  <!-- UDFPS HBM: UdfpsExtension + SDM extension hooks (14 files)
+       屏下指纹 HBM：UdfpsExtension + SDM 扩展钩子（14 个文件） -->
   <project name="android_hardware_qcom_display"
            path="hardware/qcom-caf/sm8450/display"
            remote="mkn"
            revision="0489f4cfa524fa2944719d97ad95d9dea3587612" />
 
-  <!-- livedisplay：SDM 后端初始化失败改为降级，不再 LOG(FATAL) -->
+  <!-- livedisplay: SDM backend init failure degrades instead of aborting
+       livedisplay：SDM 后端初始化失败改为降级，不再 LOG(FATAL) -->
   <project name="android_hardware_lineage_interfaces"
            path="hardware/lineage/interfaces/livedisplay"
            remote="mkn"
            revision="16eabf1134f198606cfd30a10525692800b1b9f6" />
 
-  <!-- ===== 内核 ===== -->
+  <!-- ===== Kernel / 内核 ===== -->
   <project name="android_kernel_oneplus_sm8450"
            path="kernel/oneplus/sm8450"
            remote="mkn"
@@ -95,15 +133,20 @@
            remote="mkn"
            revision="33b2efca9684793c72337cb7e97ffa32cf58ddd8" />
 
-  <!-- 注意：本仓的维护分支是 lineage-23.0-new-kmod，不是 lineage-23.2。
-       下面这个 SHA 是 lineage-23.0-new-kmod 的顶端。 -->
+  <!-- NOTE: this repo's maintained branch is lineage-23.0-new-kmod, not
+           lineage-23.2. The SHA below is that branch's tip.
+       注意：本仓的维护分支是 lineage-23.0-new-kmod，不是 lineage-23.2。
+           下面这个 SHA 是该分支的顶端。 -->
   <project name="android_kernel_oneplus_sm8450-modules"
            path="kernel/oneplus/sm8450-modules"
            remote="mkn"
            revision="50177be9d969b9ee32fbe0d34318f1da3069b6d4" />
 
-  <!-- 注意：仓名是 android_oneplus_kernel_gki-modules，
-       不是 android_kernel_oneplus_gki-modules（词序不同，容易写错）。 -->
+  <!-- NOTE: the repo is android_oneplus_kernel_gki-modules, NOT
+           android_kernel_oneplus_gki-modules — the word order differs and
+           getting it wrong makes repo sync fail.
+       注意：仓名是 android_oneplus_kernel_gki-modules，不是
+           android_kernel_oneplus_gki-modules（词序不同，写错会 sync 失败）。 -->
   <project name="android_oneplus_kernel_gki-modules"
            path="kernel/oneplus/gki-modules"
            remote="mkn"
