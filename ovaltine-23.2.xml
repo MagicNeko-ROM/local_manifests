@@ -4,7 +4,7 @@
   MagicNeko-ROM · OnePlus 10T (ovaltine) local manifest — lineage-23.2 基线
   ============================================================================
   目标产物 : AviumUI 16.2.2 / lineage_ovaltine-bp4a-userdebug
-  上游基线 : repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 --git-lfs
+  上游基线 : repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 git-lfs 开关
   用法     : 放进 .repo/local_manifests/ 后 repo sync（详见 README.md）
 
   约定
