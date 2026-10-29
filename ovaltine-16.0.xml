@@ -55,7 +55,7 @@
            remote="mkn"
            revision="d2144b3cdb0fef435ff3d9e92f36a676733b06d1" />
 
-  <project name="proprietary_vendor_oneplus/ovaltine"
+  <project name="proprietary_vendor_oneplus_ovaltine"
            path="vendor/oneplus/ovaltine"
            remote="lod"
            revision="0fa6f172b27c2ec11f683a298272db1c1763124d" />

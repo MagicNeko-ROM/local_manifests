@@ -1,19 +1,31 @@
-# MagicNeko-ROM · OnePlus 10T (ovaltine) manifests
+# MagicNeko-ROM · OnePlus 10T (ovaltine) local manifests
 
-crDroid 16.0（Android 16）在 OnePlus 10T / 一加 Ace Pro（`ovaltine`，SM8475 / cape）上的构建用 local manifest。
+OnePlus 10T / 一加 Ace Pro（`ovaltine`，SM8475）的构建用 local manifest。
 
-本仓只放 `.repo/local_manifests/` 需要的补充清单，**不是**完整 manifest —— 上游 crDroid 的几千个项目仍由官方 manifest 提供。
+本仓只放 `.repo/local_manifests/` 需要的**补充清单**，不是完整 manifest —— 上游的几千个项目仍由官方 manifest 提供。
 
-## 快速开始
+---
+
+## 清单列表
+
+| 文件 | 上游基线 | 用途 |
+|---|---|---|
+| `ovaltine-23.2.xml` | LineageOS `lineage-23.2` | AviumUI 16.2.2（含屏下指纹修复） |
+| `ovaltine-16.0.xml` | crDroid `16.0` | crDroid 16.0 构建 |
+
+---
+
+## 快速开始（lineage-23.2）
 
 ```bash
-# 1) 拉上游 crDroid 16.0（必须带 --git-lfs，否则 webview.apk 等是 LFS 指针，编不过）
-repo init -u https://github.com/crdroidandroid/android.git -b 16.0 --git-lfs
+# 1) 拉上游基线。必须带 --git-lfs：本仓有大于 50MiB 的 .so 走 LFS，
+#    不加的话下来的是一堆 130 字节的指针文件，编不过。
+repo init -u https://github.com/LineageOS/android.git -b lineage-23.2 --git-lfs
 
-# 2) 放入本仓的补充清单
+# 2) 放入补充清单
 mkdir -p .repo/local_manifests
-curl -L -o .repo/local_manifests/ovaltine-16.0.xml \
-  https://raw.githubusercontent.com/MagicNeko-ROM/local_manifests/main/ovaltine-16.0.xml
+curl -L -o .repo/local_manifests/ovaltine-23.2.xml \
+  https://raw.githubusercontent.com/MagicNeko-ROM/local_manifests/main/ovaltine-23.2.xml
 
 # 3) 同步
 repo sync -c -j"$(nproc)" --force-sync --no-clone-bundle --no-tags
@@ -21,65 +33,94 @@ repo sync -c -j"$(nproc)" --force-sync --no-clone-bundle --no-tags
 # 4) 构建
 source build/envsetup.sh
 lunch lineage_ovaltine-bp4a-userdebug
-mka bacon
+m bacon
 ```
 
-## 清单内容
+---
+
+## 清单内容（ovaltine-23.2.xml）
 
 | 路径 | 来源 | 说明 |
 |---|---|---|
 | `device/oneplus/ovaltine` | MagicNeko-ROM | 机型设备树 |
 | `device/oneplus/sm8450-common` | MagicNeko-ROM | 共用设备树 |
-| `hardware/oplus` | MagicNeko-ROM | 基于 crDroid 官方 16.0 的修改版 |
+| `vendor/oneplus/ovaltine` | MagicNeko-ROM | 供应商库（**固件需另外获取，见下**） |
 | `vendor/oneplus/sm8450-common` | MagicNeko-ROM | 供应商库 |
-| `vendor/oneplus/ovaltine` | **GitLab 上游** | 含固件；见下方「已知限制」 |
-| `kernel/oneplus/sm8450` | MagicNeko-ROM | 内核，顶端含内存扩展改动 |
-| `kernel/oneplus/sm8450-devicetrees` | MagicNeko-ROM | 设备树 DTB/DTBO |
+| `vendor/extra` | MagicNeko-ROM | 额外组件 |
+| `hardware/oplus` | MagicNeko-ROM | OPlus HAL（含指纹 shim） |
+| `hardware/qcom-caf/sm8450/display` | MagicNeko-ROM | **替换上游**，含 UDFPS HBM |
+| `hardware/lineage/interfaces/livedisplay` | MagicNeko-ROM | **替换上游**，SDM 后端降级修复 |
+| `kernel/oneplus/sm8450` | MagicNeko-ROM | 内核 |
+| `kernel/oneplus/sm8450-devicetrees` | MagicNeko-ROM | DTB / DTBO |
 | `kernel/oneplus/sm8450-modules` | MagicNeko-ROM | 外编内核模块 |
 | `kernel/oneplus/gki-modules` | MagicNeko-ROM | GKI 预编译模块 |
 
-所有 `revision` 一律钉**具体 commit SHA**，不用分支名 —— 同样的清单同步出来的树是同一份。
+所有 revision 都钉**具体 commit SHA**，不用分支名，保证产物可复现。
+
+---
+
+## 为什么有两处「替换上游」
+
+这两个仓在上游 manifest 里本来就有，本机型需要改动而上游没有：
+
+### 1. `hardware/qcom-caf/sm8450/display` — 屏下指纹 HBM
+
+面板 DTSI 是 `oplus,ofp-fp-type = <0x08>`，**没有 BIT(4) local HBM** —— 不能只点亮指纹那一小块，只能整屏进 HBM，靠 SystemUI 的压暗层压出圆形观感。
+
+HBM 的触发点编在 `UdfpsExtension` 里，而 sm8450 的 display HAL **根本没有这个文件**（只有 sm8550 / sm8750 有）。缺了它 HBM 永远不开：
+
+```
+hbmMode=off
+[FP_HAL][OpticalCore]: checkFingerUpTooFast, FP_FINGER_UP FP_ERR_FINGERUP_TOO_FAST
+[FP_HAL][IFingerprintCore]: captureImg:323: result:10108   (10108 = FP_ERR_FINGERUP_TOO_FAST)
+```
+
+屏幕被压暗、亮度没抬起来 → 采不到清晰图像 → 录入失败。
+
+本仓在此基础上还放宽了 `CoreImpl::CreateCore` 的 null-display 判定条件：`HWInfoDRM::Init` 在 DRM master 被 SurfaceFlinger 占住时会失败（SF 属 class main，先于 composer 的 class hal 启动），而 `HandleNullDisplay()` 是成功的；但 `enable_null_display_` 会被重算成 `!IsDisplayHWAvailable()`，那个函数报「可用」，与失败自相矛盾，于是原本的条件把降级路径否掉，composer 进入崩溃循环。
+
+### 2. `hardware/lineage/interfaces/livedisplay` — 不再 abort
+
+上面那个改动让 composer 走通了降级路径，但 **livedisplay 也调同一个 `CoreImpl::Init()`**。SDM 只允许一个进程持有 DRM master，composer 先拿走，livedisplay 那边拿到 null display，随后 `CreateCore` 失败，而 `SDMController.cpp` 原本是：
+
+```cpp
+if (init() != android::OK) {
+    LOG(FATAL) << "Failed to initialize SDM backend";   // ← abort
+}
+```
+
+结果每 5 秒一次 SIGABRT，init 反复重拉，Launcher 抢不到前台，系统停在 `FallbackHome`。
+
+livedisplay 只是显示调节，属可选组件，失败应降级而非 abort（`CONTROLLER_CHECK` 本就检查 `hctx_ == 0`，降级安全）。改成：
+
+```cpp
+LOG(ERROR) << "Failed to initialize SDM backend, display control unavailable";
+hctx_ = 0;
+return;
+```
+
+完整排查过程见 `device/oneplus/ovaltine/docs/fingerprint-fix-2026-10-29.md`（随 device 仓一起分发）。
+
+---
 
 ## 已知限制
 
-- **`vendor/oneplus/ovaltine` 指向上游 GitLab**。那个仓的历史里有两个超重固件
-  （`modem.img` 271MB、`dsp.img` 64MB），GitHub 放不下。本项目对固件版本做过 pin
-  （24 个分区里 `abl`/`xbl`/`xbl_config` 锁 15.0.0.700，其余随 15.0.0.1601），
-  这部分改动**不在公开仓里**，需要时请对照 `device/oneplus/ovaltine` 里
-  `BoardConfigVendor.mk` 的 `AB_OTA_PARTITIONS` 与 `radio/` 目录自行核对。
-- **跨仓改动以 patch 形式存在设备树里**，同步后需要打一次：
+### 固件需另外获取
 
-  ```bash
-  bash device/oneplus/sm8450-common/upstream-patches/apply.sh
-  ```
+`proprietary_vendor_oneplus_ovaltine` 在 GitHub 上**不含完整固件**：原始仓历史里有 `modem.img`（271MB）、`dsp.img`（64MB）等超大文件，超过 GitHub 单文件限制，已用 `git filter-repo` 从历史中摘除，改走 Release 附件。
 
-  幂等脚本，重复执行安全（已应用会跳过）；`--check` 只检查不落盘。
-  目前三份：display HAL（UDFPS hbm_enable 链路，缺了指纹不工作）、
-  vendor/lineage（depmod 容错 + 头文件冲突）、内核 KSM fragment。
+因此 sync 完成后，`vendor/oneplus/ovaltine` 里的部分 `*.img` 是**空的或缺失**。需要：
 
-## 内核说明
+1. 从本仓 [Releases](../../releases) 下载固件包；
+2. 解压到 `vendor/oneplus/ovaltine/proprietary/`；
+3. 核对 `BoardConfigVendor.mk` 与 `radio/` 里的固件版本 pin。
 
-内核本身是 **5.10.246-gki**。GKI 的设计把内核版本与 Android 框架版本解耦，sm8450
-出厂即 5.10，GKI 5.10 LTS 覆盖 Android 12–16，因此 Android 16 配 5.10 是正常搭配。
+### 另一个容易写错的仓名
 
-`android_kernel_oneplus_sm8450` 的 `lineage-23.2` 顶端包含本项目的内存扩展改动：
+`kernel/oneplus/gki-modules` 对应的仓库是 **`android_oneplus_kernel_gki-modules`**，
+不是 `android_kernel_oneplus_gki-modules` —— 词序不同，写错会 sync 失败。
 
-- `arch/arm64/configs/vendor/oplus/ksm.config` → `CONFIG_KSM=y`
-- 运行时由 `device/oneplus/sm8450-common/init/init.kernel.post_boot-cape.sh` 的
-  `configure_memory_extension()` 按内存自适应启用 zram（`min(RAM×50%, 6GB)`、lz4）
-  与 KSM；配套 SELinux 授权在 `device/oneplus/sm8450-common/sepolicy/`（`sysfs_ksm`）。
+### 内核模块仓的分支
 
-> 刷机提示：改了 SELinux policy 后**必须把 `vendor` 与 `odm` 一起刷** ——
-> 运行时加载的是 `/odm/etc/selinux/precompiled_sepolicy`，它不校验 vendor 的哈希，
-> 只刷 vendor 不会生效。
-
-## 目录
-
-```
-ovaltine-16.0.xml   # 放进 .repo/local_manifests/ 的补充清单
-README.md           # 本文件
-```
-
-## 许可
-
-清单文件本身按原样提供。各项目源码分别遵循其自身许可（AOSP / LineageOS / crDroid / 高通 CAF 等）。
+`android_kernel_oneplus_sm8450-modules` 的维护分支是 **`lineage-23.0-new-kmod`**，
+不是 `lineage-23.2`。清单里钉的是该分支的顶端 SHA。
