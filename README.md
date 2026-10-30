@@ -72,7 +72,7 @@ are reproducible.
 | `vendor/extra` | `android_vendor_extra` | Extra components / 额外组件 |
 | `hardware/oplus` | `android_hardware_oplus` | OPlus HALs incl. fingerprint shim / 含指纹 shim |
 | `hardware/qcom-caf/sm8450/display` | `android_hardware_qcom_display` | **Overrides upstream** · UDFPS HBM / **替换上游** |
-| `hardware/lineage/interfaces/livedisplay` | `android_hardware_lineage_interfaces` | **Overrides upstream** · SDM degrade fix / **替换上游** |
+| `hardware/lineage/interfaces` | `android_hardware_lineage_interfaces` | **Overrides upstream** · SDM degrade fix / **替换上游** |
 | `kernel/oneplus/sm8450` | `android_kernel_oneplus_sm8450` | Kernel / 内核 |
 | `kernel/oneplus/sm8450-devicetrees` | `android_kernel_oneplus_sm8450-devicetrees` | DTB / DTBO |
 | `kernel/oneplus/sm8450-modules` | `android_kernel_oneplus_sm8450-modules` | Out-of-tree modules / 外编模块 |
@@ -167,6 +167,38 @@ Full write-up / 完整排查记录：
 `device/oneplus/ovaltine/docs/fingerprint-fix-2026-10-29.md`
 
 ---
+
+## Overriding an upstream project / 覆盖上游项目
+
+`repo` merges the upstream manifest and every file in `.repo/local_manifests/`
+into one list before syncing, and refuses two `<project>` entries on the same
+path. A local manifest therefore cannot simply redeclare something upstream
+already ships — it has to remove the upstream entry first:
+
+`repo` 在 sync 之前会把上游 manifest 和 `.repo/local_manifests/` 里的每个文件
+合并成一张表，同一个 path 出现两次就直接报错。所以本地清单**不能只是重新声明**
+上游已有的项目，必须先把它摘掉：
+
+```xml
+<remove-project name="LineageOS/android_hardware_qcom_display"
+                path="hardware/qcom-caf/sm8450/display" />
+<project name="android_hardware_qcom_display"
+         path="hardware/qcom-caf/sm8450/display" remote="mkn" revision="..." />
+```
+
+Skipping the `remove-project` fails with
+`error: duplicate path <path> in .repo/manifest.xml`.
+漏掉 `remove-project` 会直接报 `error: duplicate path <path>`。
+
+**Nested paths 嵌套路径**: overwriting a *parent* project with a project that
+lives *inside* it is the other trap. Upstream declares
+`hardware/lineage/interfaces`; this manifest declares the same repository — the
+complete `interfaces` tree, not just `livedisplay` — so its `path` must be
+`hardware/lineage/interfaces`, and the upstream parent must be removed. Pointing
+it at `.../interfaces/livedisplay` puts a whole copy inside the parent checkout,
+and every child file shows up as untracked.
+覆盖**父项目**时，`path` 必须与上游一致（写成父路径），否则整仓会被塞进子目录，
+父项目 checkout 里全是未跟踪文件。
 
 ## Known limitations / 已知限制
 
