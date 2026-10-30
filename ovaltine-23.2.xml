@@ -110,6 +110,12 @@
 
   <!-- UDFPS HBM: UdfpsExtension + SDM extension hooks (14 files)
        屏下指纹 HBM：UdfpsExtension + SDM 扩展钩子（14 个文件） -->
+  <!-- Override upstream qcom display (declared in
+       .repo/manifests/snippets/lineage.xml:144). repo requires an
+       explicit remove-project before a local manifest redeclares
+       the same path. -->
+  <remove-project name="LineageOS/android_hardware_qcom_display"
+                  path="hardware/qcom-caf/sm8450/display" />
   <project name="android_hardware_qcom_display"
            path="hardware/qcom-caf/sm8450/display"
            remote="mkn"
@@ -117,8 +123,15 @@
 
   <!-- livedisplay: SDM backend init failure degrades instead of aborting
        livedisplay：SDM 后端初始化失败改为降级，不再 LOG(FATAL) -->
+  <!-- Override: upstream declares the PARENT project
+       hardware/lineage/interfaces (snippets/lineage.xml:27); a local
+       manifest cannot declare a nested child path under it without
+       removing the parent first, or every child file shows up as
+       untracked in the parent checkout. -->
+  <remove-project name="LineageOS/android_hardware_lineage_interfaces"
+                  path="hardware/lineage/interfaces" />
   <project name="android_hardware_lineage_interfaces"
-           path="hardware/lineage/interfaces/livedisplay"
+           path="hardware/lineage/interfaces"
            remote="mkn"
            revision="16eabf1134f198606cfd30a10525692800b1b9f6" />
 
