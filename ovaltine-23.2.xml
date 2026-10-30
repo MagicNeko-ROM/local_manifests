@@ -95,7 +95,7 @@
   <project name="proprietary_vendor_oneplus_sm8450-common"
            path="vendor/oneplus/sm8450-common"
            remote="mkn"
-           revision="a0452e36b8556cf8db5292d3c0683d9fd24d1dcb" />
+           revision="f7c17de664731cfa38aa3254dadca17043bdba10" />
 
   <project name="android_vendor_extra"
            path="vendor/extra"
