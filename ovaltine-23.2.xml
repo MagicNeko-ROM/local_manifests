@@ -79,34 +79,34 @@
   <project name="android_device_oneplus_ovaltine"
            path="device/oneplus/ovaltine"
            remote="mkn"
-           revision="60775c41cb4477df830ea59ce6c0b13d14ec1eb1" />
+           revision="731cea81899b176b01cfbf7f80b8454ccd99746e" />
 
   <project name="android_device_oneplus_sm8450-common"
            path="device/oneplus/sm8450-common"
            remote="mkn"
-           revision="764e8943c31ab2e25319502f0aa060a97669ce16" />
+           revision="8fad43c85e2a0a7cd069a9a47b896799052f474e" />
 
   <!-- ===== Vendor / 供应商库 ===== -->
   <project name="proprietary_vendor_oneplus_ovaltine"
            path="vendor/oneplus/ovaltine"
            remote="mkn"
-           revision="e02766c98ac208d6686b99f130425ea999bca5d4" />
+           revision="aed26385ddd5c0840b8ec8afd753913a5d3f5fee" />
 
   <project name="proprietary_vendor_oneplus_sm8450-common"
            path="vendor/oneplus/sm8450-common"
            remote="mkn"
-           revision="f7c17de664731cfa38aa3254dadca17043bdba10" />
+           revision="8dda598d891de4a3f2a3d9f6381be237ee5d52d6" />
 
   <project name="android_vendor_extra"
            path="vendor/extra"
            remote="mkn"
-           revision="b103218261cbc0ea01f32a75f1cff5baaf74e2b5" />
+           revision="2b42674c7065baa745631473ff95a3f6a0d52ea6" />
 
   <!-- ===== Hardware / 硬件 ===== -->
   <project name="android_hardware_oplus"
            path="hardware/oplus"
            remote="mkn"
-           revision="ae0e62468111b679497d9bee6ef1d979bd76f7b8" />
+           revision="c2d46961facad4ad3b07839d082c120481ecedb0" />
 
   <!-- UDFPS HBM: UdfpsExtension + SDM extension hooks (14 files)
        屏下指纹 HBM：UdfpsExtension + SDM 扩展钩子（14 个文件） -->
@@ -139,12 +139,12 @@
   <project name="android_kernel_oneplus_sm8450"
            path="kernel/oneplus/sm8450"
            remote="mkn"
-           revision="4aa115b389bb8c72f76686d6eac56c4baebabe53" />
+           revision="e3a657ea8d9286c3d06db6fe83890196f784384a" />
 
   <project name="android_kernel_oneplus_sm8450-devicetrees"
            path="kernel/oneplus/sm8450-devicetrees"
            remote="mkn"
-           revision="33b2efca9684793c72337cb7e97ffa32cf58ddd8" />
+           revision="5218c5749961948d93a853939ffd8ac5b0fd8d0a" />
 
   <!-- NOTE: this repo's maintained branch is lineage-23.0-new-kmod, not
            lineage-23.2. The SHA below is that branch's tip.
@@ -163,6 +163,6 @@
   <project name="android_oneplus_kernel_gki-modules"
            path="kernel/oneplus/gki-modules"
            remote="mkn"
-           revision="35ff7705cac09089f5ef2070bd9973c46357d64f" />
+           revision="5fc27335234aa788eead86ed678cf10c069e386e" />
 
 </manifest>
