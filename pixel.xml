@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Copyright (C) 2026 The AviumUI Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<manifest>
+  <remote  name="gitlab"
+           fetch="https://gitlab.com/"
+           revision="sixteen-qpr2" />
+
+  <!-- google/pixel apps -->
+  <project path="vendor/pixel/clocks" name="proprietary_vendor_pixel_clocks" remote="avium" clone-depth="1" />
+  <project path="vendor/pixel/sounds" name="PixelOS-AOSP/proprietary_vendor_pixel_sounds" remote="gitlab" clone-depth="1"/>
+  <project path="vendor/pixel/gms" name="proprietary_vendor_pixel_gms" remote="avium" clone-depth="1" />
+
+</manifest>
