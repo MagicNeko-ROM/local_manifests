@@ -9,6 +9,23 @@
 
 ---
 
+## 用哪一份清单？
+
+这里并存两条独立的线，选一条，不要混用。
+
+| 文件 | 目标 | 设备仓钉在 | 说明 |
+|---|---|---|---|
+| `ovaltine-23.2.xml` | AviumUI 16.2（LineageOS 23.2 底座） | `lineage-23.2` 上的 commit | 最早的九仓快照 |
+| `pixelos-ovaltine-16.xml` | PixelOS 16（sixteen-qpr2 / AOSP 16.0.0_r4） | **`pixelos-a16`** 上的 commit | PixelOS 的适配改动全在这条线 |
+
+`pixel.xml` 不是设备清单——它只声明 AviumUI 构建用的 GMS 仓库。
+
+两份设备清单都必须保留那两条 `remove-project`：PixelOS 和 Lineage 上游都已
+声明了 `hardware/qcom-caf/sm8450/display` 与 `hardware/lineage/interfaces`，
+本地清单不先移除上游项目就无法重复声明同一路径。
+
+---
+
 ## 环境要求
 
 | | |

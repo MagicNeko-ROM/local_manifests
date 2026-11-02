@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  MagicNeko-ROM · OnePlus 10T (ovaltine) — PixelOS 16 设备仓清单
+  ============================================================================
+
+  EN  Target   : PixelOS 16 (sixteen-qpr2, android-16.0.0_r4)
+      Base     : repo init -u https://github.com/PixelOS-AOSP/android_manifest.git
+                            -b sixteen-qpr2 (git-lfs required)
+      Branch   : every device repo is pinned to a commit on refs/heads/pixelos-a16,
+                 so PixelOS-specific adaptation never mixes with the lineage-23.2
+                 history used by the AviumUI manifest in this same directory.
+      Verified : builds and boots on OnePlus 10T; 84 GMS packages, livedisplay
+                 stable, UDFPS works.
+
+  ZH  目标     : PixelOS 16 (sixteen-qpr2 / android-16.0.0_r4)
+      基线     : repo init -u https://github.com/PixelOS-AOSP/android_manifest.git
+                            -b sixteen-qpr2（必需 git-lfs）
+      分支     : 设备仓一律钉 refs/heads/pixelos-a16 上的 commit，PixelOS 的适配改动
+                 与同目录下 AviumUI 那份清单用的 lineage-23.2 历史彻底分开。
+      已验证   : 在 OnePlus 10T 上编过并开机；84 个 GMS 包、livedisplay 稳定、指纹可用。
+
+  ============================================================================
+  EN  Why this file exists
+  ZH  为什么要单独一份
+  ============================================================================
+  EN  PixelOS 用原版 AOSP repo（storage.googleapis.com 的 repo 2.71），
+      原版 repo 不读 lineage.dependencies / custom.dependencies ——
+      实测 `grep -c dependencies repo` 结果是 0。
+      所以 PixelOS 设备树里的 custom.dependencies 是个死文件，
+      所有设备依赖必须靠本地 manifest 显式声明，不能指望设备树自动拉。
+
+  ZH  PixelOS 用原版 AOSP repo（2.71），原版 repo 不读
+      lineage.dependencies / custom.dependencies（实测 grep 结果 0 处）。
+      官方设备树里那份 custom.dependencies 在 PixelOS 下不生效，
+      设备依赖只能写在这里。
+
+  ============================================================================
+  EN  Conventions
+  ZH  约定
+  ============================================================================
+  EN  * Revisions are concrete commit SHAs, never branch names (reproducible).
+      * No default element: the main manifest's global remote/revision stays untouched.
+      * Two paths must remove-project first, because PixelOS already declares them:
+          hardware/qcom-caf/sm8450/display  -> snippets/lineage.xml:113
+          hardware/lineage/interfaces       -> snippets/lineage.xml:16
+
+  ZH  * revision 一律钉具体 commit SHA，不用分支名 —— 保证产物可复现。
+      * 不写 default 元素，避免覆盖主 manifest 的全局 default remote / revision。
+      * 两条路径必须先 remove-project，因为 PixelOS 主 manifest 已经声明了：
+          hardware/qcom-caf/sm8450/display  -> snippets/lineage.xml:113
+          hardware/lineage/interfaces       -> snippets/lineage.xml:16
+-->
+<manifest>
+
+  <!-- ===== Remotes / 远端 ===== -->
+  <remote name="mkn" fetch="https://github.com/MagicNeko-ROM" />
+
+  <!-- ===== Device trees / 设备树 ===== -->
+  <project name="android_device_oneplus_ovaltine"
+           path="device/oneplus/ovaltine"
+           remote="mkn"
+           revision="9da01ebcc29af16d3e08aa762a63ad420e3f409d" />
+
+  <project name="android_device_oneplus_sm8450-common"
+           path="device/oneplus/sm8450-common"
+           remote="mkn"
+           revision="f963eb8c99839cbab7f653bee00fb898dade2581" />
+
+  <!-- ===== Vendor / 供应商库 ===== -->
+  <project name="proprietary_vendor_oneplus_ovaltine"
+           path="vendor/oneplus/ovaltine"
+           remote="mkn"
+           revision="aed26385ddd5c0840b8ec8afd753913a5d3f5fee" />
+
+  <project name="proprietary_vendor_oneplus_sm8450-common"
+           path="vendor/oneplus/sm8450-common"
+           remote="mkn"
+           revision="8dda598d891de4a3f2a3d9f6381be237ee5d52d6" />
+
+  <!-- vendor/extra：PixelOS 的 vendor/lineage/config/common.mk 第 1-2 行
+       仍有 inherit-product-if-exists, vendor/extra/product.mk，所以它照样生效。
+       vendor/extra 不在 PixelOS 主 manifest 里，必须在这里提供。 -->
+  <project name="android_vendor_extra"
+           path="vendor/extra"
+           remote="mkn"
+           revision="2b42674c7065baa745631473ff95a3f6a0d52ea6" />
+
+  <!-- ===== Hardware / 硬件 ===== -->
+  <project name="android_hardware_oplus"
+           path="hardware/oplus"
+           remote="mkn"
+           revision="c2d46961facad4ad3b07839d082c120481ecedb0" />
+
+  <!-- UDFPS HBM: UdfpsExtension + SDM 扩展钩子。
+       PixelOS 已在 snippets/lineage.xml:113 声明该 path，必须先 remove。 -->
+  <remove-project name="LineageOS/android_hardware_qcom_display"
+                  path="hardware/qcom-caf/sm8450/display" />
+  <project name="android_hardware_qcom_display"
+           path="hardware/qcom-caf/sm8450/display"
+           remote="mkn"
+           revision="0489f4cfa524fa2944719d97ad95d9dea3587612" />
+
+  <!-- livedisplay: SDM 后端初始化失败改为降级，不再 LOG(FATAL)。
+       PixelOS 已在 snippets/lineage.xml:16 声明父项目，必须先 remove。 -->
+  <remove-project name="LineageOS/android_hardware_lineage_interfaces"
+                  path="hardware/lineage/interfaces" />
+  <project name="android_hardware_lineage_interfaces"
+           path="hardware/lineage/interfaces"
+           remote="mkn"
+           revision="16eabf1134f198606cfd30a10525692800b1b9f6" />
+
+  <!-- ===== Kernel / 内核 ===== -->
+  <project name="android_kernel_oneplus_sm8450"
+           path="kernel/oneplus/sm8450"
+           remote="mkn"
+           revision="e3a657ea8d9286c3d06db6fe83890196f784384a" />
+
+  <project name="android_kernel_oneplus_sm8450-devicetrees"
+           path="kernel/oneplus/sm8450-devicetrees"
+           remote="mkn"
+           revision="5218c5749961948d93a853939ffd8ac5b0fd8d0a" />
+
+  <!-- NOTE: 本仓维护分支是 lineage-23.0-new-kmod，不是 lineage-23.2，
+       下面这个 SHA 是该分支的顶端。 -->
+  <project name="android_kernel_oneplus_sm8450-modules"
+           path="kernel/oneplus/sm8450-modules"
+           remote="mkn"
+           revision="50177be9d969b9ee32fbe0d34318f1da3069b6d4" />
+
+  <!-- NOTE: 仓名是 android_oneplus_kernel_gki-modules，不是
+       android_kernel_oneplus_gki-modules —— 词序不同，写错会让 sync 失败。 -->
+  <project name="android_oneplus_kernel_gki-modules"
+           path="kernel/oneplus/gki-modules"
+           remote="mkn"
+           revision="5fc27335234aa788eead86ed678cf10c069e386e" />
+
+</manifest>

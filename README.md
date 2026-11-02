@@ -10,6 +10,25 @@ from the official manifest.
 
 ---
 
+## Which manifest?
+
+Two independent tracks live here. Pick one, never mix them.
+
+| File | Target | Device repos pinned to | Notes |
+|---|---|---|---|
+| `ovaltine-23.2.xml` | AviumUI 16.2 (LineageOS 23.2 base) | commits on `lineage-23.2` | the original nine-repo snapshot |
+| `pixelos-ovaltine-16.xml` | PixelOS 16 (sixteen-qpr2 / AOSP 16.0.0_r4) | commits on `pixelos-a16` | PixelOS adaptation lives here |
+
+`pixel.xml` is not a device manifest — it only declares the GMS repositories
+used by the AviumUI build.
+
+Both device manifests keep the two `remove-project` entries on purpose: PixelOS
+and Lineage already declare `hardware/qcom-caf/sm8450/display` and
+`hardware/lineage/interfaces` upstream, and a local manifest cannot redeclare
+the same path without removing the upstream project first.
+
+---
+
 ## Requirements
 
 | | |
