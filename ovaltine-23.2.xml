@@ -139,7 +139,7 @@
   <project name="android_kernel_oneplus_sm8450"
            path="kernel/oneplus/sm8450"
            remote="mkn"
-           revision="e3a657ea8d9286c3d06db6fe83890196f784384a" />
+           revision="81f86f3db21b71ca53a68e21fce6706ffd81b3d9" />
 
   <project name="android_kernel_oneplus_sm8450-devicetrees"
            path="kernel/oneplus/sm8450-devicetrees"
